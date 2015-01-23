@@ -61,16 +61,3 @@ class Darwin(Platform):
 
     def scroll(self, x=0, y=0):
         Post(CGEventCreateScrollWheelEvent(None, kCGScrollEventUnitPixel, 2, y, x))
-
-if __name__ == '__main__':
-    print 'hi'
-
-    plat = X11()
-    X11.set_mouse_pos(10, 10)
-    print '10, 10'
-
-    X11.set_mouse_pos(100, 100)
-    print '10, 10'
-
-
-
