@@ -54,7 +54,7 @@ class Platform(object):
     def _mouseup(self, button, x, y):
         return not_implemented()
 
-    def scroll(self, x_amount=0, y_amount=0):
+    def scroll(self, x=0, y=0):
         return not_implemented()
 
     def get_screensize(self):

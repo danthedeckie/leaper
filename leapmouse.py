@@ -15,6 +15,7 @@ leapinfo = LeapInfo()
 class MouseListener(Leap.Listener):
 
     pinching = False
+    pickup = False
 
     def on_connect(self, controller):
         print 'connected!'
@@ -41,16 +42,29 @@ class MouseListener(Leap.Listener):
 
             # and these are right at the office (1920x1080)
             platform.set_mouse_pos(
-                6 * (leapinfo.x + 150),
+                10 * (leapinfo.x + 150),
                 (-6 * leapinfo.y) + 1400)
+
+            #print hand.palm_normal[2]
 
             if hand.pinch_strength > 0.6 and not self.pinching:
                 self.pinching = True
-                platform.mousedown()
+                if hand.palm_normal[0] > 0: # hand facing downwards
+                    platform.click()
+                else:
+                    platform.mousedown()
 
             elif hand.pinch_strength < 0.5 and self.pinching:
                 self.pinching = False
-                platform.mouseup()
+                if hand.palm_normal[0] < 1:
+                    platform.mouseup()
+
+
+            elif hand.palm_normal[2] > 0.1:
+                platform.scroll(y=10*hand.palm_normal[2])
+            elif hand.palm_normal[2] < -0.5:
+                platform.scroll(y=10*hand.palm_normal[2])
+
 
 
 def init():

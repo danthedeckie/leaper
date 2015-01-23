@@ -10,11 +10,12 @@
 
 from Tkinter import Tk, Canvas, Label, mainloop, StringVar
 from threading import Thread
-from mouse import mouseinfo
 from leapmouse import leapinfo
+from platforms import platform
 
 def tkgui():
     ''' make a Tk-based diagnostics window '''
+
     window = Tk()
     #canvas = Canvas(window, width=300, height=300)
     #canvas.grid()
@@ -54,13 +55,9 @@ def tkgui():
     lybox = Label(window, textvariable=lytext)
     lybox.grid(row=2, column=3)
 
-    def move_mouse(x=100, y=100):
-        window.event_generate('<Motion>', warp=True, x=x, y=y)
-
-
     def update_texts():
-        xtext.set(mouseinfo.x)
-        ytext.set(mouseinfo.y)
+        xtext.set(platform.x)
+        ytext.set(platform.y)
 
         lxtext.set(leapinfo.x)
         lytext.set(leapinfo.y)
@@ -69,20 +66,16 @@ def tkgui():
 
     update_texts()
 
-    window.after(40, move_mouse)
-
     mainloop()
 
-def do_gui(mouse_info):
+def do_gui():
     ''' start the gui in it's own thread '''
-    global mouseinfo
-
-    mouseinfo = mouse_info
 
     gui = Thread(target=tkgui)
     gui.daemon = True
     gui.start()
+    return gui
 
 
 if __name__ == '__main__':
-    do_gui()
+    do_gui().join()
