@@ -10,57 +10,76 @@
 
 from Tkinter import Tk, Canvas, Label, mainloop, StringVar
 from threading import Thread
-from leapmouse import leapinfo
+import leapmouse
 from platforms import platform
 
 def tkgui():
     ''' make a Tk-based diagnostics window '''
 
     window = Tk()
-    #canvas = Canvas(window, width=300, height=300)
-    #canvas.grid()
+
+    position = [0, 0] # row, col
+
+    def column(which):
+        position[1] += which * 2
+        position[0] = 0
+
+    def add_item(label, variable=None):
+        Label(window, text=label).grid(row=position[0], column=position[1])
+        if variable:
+            Label(window, textvariable=variable).grid(row=position[0], column=position[1]+1)
+        position[0] +=1
+
+    m_x = StringVar()
+    m_y = StringVar()
+
+    l_x = StringVar()
+    l_y = StringVar()
+    l_roll = StringVar() # wrist roll
+    l_tilt = StringVar()
+    l_pinch = StringVar()
+    l_grab = StringVar()
 
     # mouse:
 
-    Label(window, text='Mouse Info:').grid(row=0, column=0)
+    column(0)
 
-    xtext = StringVar()
-    xtext.set('X')
+    add_item('Mouse Info:')
+    add_item('x:', m_x)
 
-    ytext = StringVar()
-    ytext.set('Y')
-
-    Label(window, text='x:').grid(row=1, column=0)
-    xbox = Label(window, textvariable=xtext)
-    xbox.grid(row=1, column=1)
-
-    Label(window, text='y:').grid(row=2, column=0)
-    ybox = Label(window, textvariable=ytext)
-    ybox.grid(row=2, column=1)
+    add_item('y:', m_y)
 
     # leap:
-    Label(window, text='Leap Info:').grid(row=0, column=2)
+    column(1)
 
-    lxtext = StringVar()
-    lxtext.set('X')
+    add_item('Leap Info:')
+    add_item('x:', l_x)
+    add_item('y:', l_y)
 
-    lytext = StringVar()
-    lytext.set('Y')
+    add_item('-')
 
-    Label(window, text='x:').grid(row=1, column=2)
-    lxbox = Label(window, textvariable=lxtext)
-    lxbox.grid(row=1, column=3)
-
-    Label(window, text='y:').grid(row=2, column=2)
-    lybox = Label(window, textvariable=lytext)
-    lybox.grid(row=2, column=3)
+    add_item('roll:', l_roll)
+    add_item('tilt:', l_tilt)
+    add_item('-')
+    add_item('pinch:', l_pinch)
+    add_item('grab:', l_grab)
 
     def update_texts():
-        xtext.set(platform.x)
-        ytext.set(platform.y)
 
-        lxtext.set(leapinfo.x)
-        lytext.set(leapinfo.y)
+        try:
+            m_x.set(platform.x)
+            m_y.set(platform.y)
+
+            l_x.set(int(leapmouse.leapinfo.x))
+            l_y.set(int(leapmouse.leapinfo.y))
+
+            l_roll.set(leapmouse.leapinfo.hand.palm_normal.roll)
+            l_tilt.set(leapmouse.leapinfo.hand.palm_normal.yaw)
+            l_pinch.set(leapmouse.leapinfo.hand.pinch_strength)
+            l_grab.set(leapmouse.leapinfo.hand.grab_strength)
+
+        except Exception as e:
+            pass
 
         window.after(1, update_texts)
 

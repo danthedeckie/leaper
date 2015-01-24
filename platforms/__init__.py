@@ -67,6 +67,6 @@ if sys.platform == "darwin": # OSX
 
 else:
 
-    import x11
+    import x11_xlib as x11
 
     platform = x11.X11()

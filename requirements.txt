@@ -1,1 +1,3 @@
 xcffib
+python-xlib
+PyUserInput

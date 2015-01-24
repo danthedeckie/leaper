@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!./.virtualenv/bin/python
 
 from time import sleep
 

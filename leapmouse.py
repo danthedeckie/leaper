@@ -5,15 +5,13 @@ from threading import Thread
 
 from platforms import platform
 
-class LeapInfo(object):
-    x = 200
-    y = 300
-    z = 100
-
-leapinfo = LeapInfo()
+leapinfo = None
 
 class MouseListener(Leap.Listener):
 
+    x = 0
+    y = 0
+    z = 0
     pinching = False
     pickup = False
 
@@ -25,52 +23,54 @@ class MouseListener(Leap.Listener):
         print 'disconnected!'
 
     def on_frame(self, controller):
-        global leapinfo
 
         hands = controller.frame().hands
 
         if len(hands):
             hand = hands[0]
-            leapinfo.x = hand.stabilized_palm_position[0]
-            leapinfo.y = hand.stabilized_palm_position[1]
-            leapinfo.z = hand.stabilized_palm_position[2]
+            self.hand = hand
+            self.x = hand.stabilized_palm_position[0]
+            self.y = hand.stabilized_palm_position[1]
+            self.z = hand.stabilized_palm_position[2]
 
-            # These 'magic numbers' were correct at home, but not the office:
-            #platform.set_mouse_pos(
-            #    4.4 * (leapinfo.x + 150),
-            #    (-2 * leapinfo.y) + 850)
-
-            # and these are right at the office (1920x1080)
+            # these 'magic numbers' seem right at (1920x1080)
+            # TODO: make less magic.
             platform.set_mouse_pos(
-                10 * (leapinfo.x + 150),
-                (-6 * leapinfo.y) + 1400)
+                10 * (self.x + 150),
+                (-6 * self.y) + 1400)
 
-            #print hand.palm_normal[2]
-
-            if hand.pinch_strength > 0.6 and not self.pinching:
-                self.pinching = True
-                if hand.palm_normal[0] > 0: # hand facing downwards
-                    platform.click()
+            if hand.pinch_strength > 0.6 and not self.pinching and hand.grab_strength < 0.3:
+                if hand.palm_normal.roll < -0.4: # hand not facing downwards
+                    if not self.pinching:
+                        platform.click()
+                        self.pinching = True
                 else:
+                    self.pinching = True
                     platform.mousedown()
 
-            elif hand.pinch_strength < 0.5 and self.pinching:
+            elif hand.pinch_strength < 0.7 and self.pinching:
                 self.pinching = False
-                if hand.palm_normal[0] < 1:
-                    platform.mouseup()
+                platform.mouseup()
 
+            # Scrolling.  Doesn't work well (yet).
+            # I think probably this style (whole wrist direction) isn't a 
+            # good idea for my tendonitis, anyway.
 
-            elif hand.palm_normal[2] > 0.1:
-                platform.scroll(y=10*hand.palm_normal[2])
-            elif hand.palm_normal[2] < -0.5:
-                platform.scroll(y=10*hand.palm_normal[2])
+            #elif hand.palm_normal.roll > -0.1: # hand horizontal
+            #    if hand.palm_normal.pitch > 0.1 and not self.pinching:
+            #        platform.scroll(y=2) # TODO Do variable scrolling?
+            #    elif hand.palm_normal.pitch < -0.5 and not self.pinching:
+            #        platform.scroll(y=-2)
 
 
 
 def init():
-    listener = MouseListener()
+    global leapinfo
+
+    leapinfo = MouseListener()
     controller = Leap.Controller()
-    controller.add_listener(listener)
+    controller.add_listener(leapinfo)
+
     # wait...
     sys.stdin.readline()
 
